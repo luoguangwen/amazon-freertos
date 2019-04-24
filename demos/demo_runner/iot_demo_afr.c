@@ -105,9 +105,9 @@ static void _onNetworkStateChangeCallback( uint32_t network,
                                            AwsIotNetworkState_t state,
                                            void * pContext )
 {
-    IotNetworkServerInfoAfr_t serverInfo = AWS_IOT_NETWORK_SERVER_INFO_AFR_INITIALIZER;
-    IotNetworkBleConnectionInfo_t connectionInfo =  { .service = IOT_BLE_SERVICE_MQTT };
-    void *pServerInfo = NULL;
+    IotNetworkServerInfoAfr_t ipNetworkInfo = AWS_IOT_NETWORK_SERVER_INFO_AFR_INITIALIZER;
+    IotBleNetworkInfo_t bleNetworkInfo =  { .service = IOT_BLE_SERVICE_MQTT };
+    void *pIotNetworkInfo = NULL;
     IotNetworkCredentialsAfr_t credentials = AWS_IOT_NETWORK_CREDENTIALS_AFR_INITIALIZER;
     const IotNetworkInterface_t * pNetworkInterface;
     bool awsIotMqttMode = false;
@@ -125,18 +125,18 @@ static void _onNetworkStateChangeCallback( uint32_t network,
             pNetworkInterface = AwsIotNetworkManager_GetNetworkInterface( demoConnectedNetwork );
             
             /* ALPN only works over port 443. Disable it otherwise. */
-            if( serverInfo.port != 443 )
+            if( ipNetworkInfo.port != 443 )
             {
                 credentials.pAlpnProtos = NULL;
             }
 
-            pServerInfo = ( demoConnectedNetwork == AWSIOT_NETWORK_TYPE_BLE ) ? (void*) &connectionInfo: ( void*) &serverInfo;
+            pIotNetworkInfo = ( demoConnectedNetwork == AWSIOT_NETWORK_TYPE_BLE ) ? (void*) &bleNetworkInfo: ( void*) &ipNetworkInfo;
 
             awsIotMqttMode = ( demoConnectedNetwork != AWSIOT_NETWORK_TYPE_BLE );
 
             pDemoContext->networkConnectedCallback( awsIotMqttMode,
                                                     clientcredentialIOT_THING_NAME,
-                                                    pServerInfo,
+                                                    pIotNetworkInfo,
                                                     &credentials,
                                                     pNetworkInterface );
         }
@@ -159,17 +159,17 @@ static void _onNetworkStateChangeCallback( uint32_t network,
                 pNetworkInterface = AwsIotNetworkManager_GetNetworkInterface( demoConnectedNetwork );
                 
                 /* ALPN only works over port 443. Disable it otherwise. */
-                if( serverInfo.port != 443 )
+                if( ipNetworkInfo.port != 443 )
                 {
                     credentials.pAlpnProtos = NULL;
                 }
 
                 awsIotMqttMode = ( demoConnectedNetwork != AWSIOT_NETWORK_TYPE_BLE );
-                pServerInfo = ( demoConnectedNetwork == AWSIOT_NETWORK_TYPE_BLE ) ? (void*) &connectionInfo: ( void*) &serverInfo;
+                pIotNetworkInfo = ( demoConnectedNetwork == AWSIOT_NETWORK_TYPE_BLE ) ? (void*) &bleNetworkInfo: ( void*) &ipNetworkInfo;
 
                 pDemoContext->networkConnectedCallback( awsIotMqttMode,
                                                         clientcredentialIOT_THING_NAME,
-                                                        pServerInfo,
+                                                        pIotNetworkInfo,
                                                         &credentials,
                                                         pNetworkInterface );
             }
@@ -296,10 +296,10 @@ void runDemoTask( void * pArgument )
     
     demoContext_t * pContext = ( demoContext_t * ) pArgument;
     const IotNetworkInterface_t * pNetworkInterface = NULL;
-    IotNetworkServerInfoAfr_t serverInfo = AWS_IOT_NETWORK_SERVER_INFO_AFR_INITIALIZER;
+    IotNetworkServerInfoAfr_t ipNetworkInfo = AWS_IOT_NETWORK_SERVER_INFO_AFR_INITIALIZER;
     IotNetworkCredentialsAfr_t credentials = AWS_IOT_NETWORK_CREDENTIALS_AFR_INITIALIZER;
-    IotNetworkBleConnectionInfo_t connectionInfo = { .service = IOT_BLE_SERVICE_MQTT };
-    void *pServerInfo = NULL;
+    IotBleNetworkInfo_t bleNetworkInfo = { .service = IOT_BLE_SERVICE_MQTT };
+    void *pIotNetworkInfo = NULL;
  
     int status = EXIT_SUCCESS;
     bool awsIotMqttMode = false;
@@ -313,7 +313,7 @@ void runDemoTask( void * pArgument )
         pNetworkInterface = AwsIotNetworkManager_GetNetworkInterface( demoConnectedNetwork );
            
         /* ALPN only works over port 443. Disable it otherwise. */
-        if( serverInfo.port != 443 )
+        if( ipNetworkInfo.port != 443 )
         {
             credentials.pAlpnProtos = NULL;
         }
@@ -321,12 +321,12 @@ void runDemoTask( void * pArgument )
         /* Set AWS Iot Mqtt mode to false to disable keep alive for non TCP/IP networks like bluetooth */
         awsIotMqttMode = ( demoConnectedNetwork != AWSIOT_NETWORK_TYPE_BLE );
 
-         pServerInfo = ( demoConnectedNetwork == AWSIOT_NETWORK_TYPE_BLE ) ? (void*) &connectionInfo: ( void*) &serverInfo;
+        pIotNetworkInfo = ( demoConnectedNetwork == AWSIOT_NETWORK_TYPE_BLE ) ? (void*) &bleNetworkInfo: ( void*) &ipNetworkInfo;
 
         /* Run the demo. */
         pContext->demoFunction( awsIotMqttMode,
                                 clientcredentialIOT_THING_NAME,
-                                pServerInfo,
+                                pIotNetworkInfo,
                                 &credentials,
                                 pNetworkInterface );
 
