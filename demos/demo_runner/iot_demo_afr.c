@@ -106,6 +106,8 @@ static void _onNetworkStateChangeCallback( uint32_t network,
                                            void * pContext )
 {
     IotNetworkServerInfoAfr_t serverInfo = AWS_IOT_NETWORK_SERVER_INFO_AFR_INITIALIZER;
+    IotNetworkBleConnectionInfo_t connectionInfo =  { .service = IOT_BLE_SERVICE_MQTT };
+    void *pServerInfo = NULL;
     IotNetworkCredentialsAfr_t credentials = AWS_IOT_NETWORK_CREDENTIALS_AFR_INITIALIZER;
     const IotNetworkInterface_t * pNetworkInterface;
     bool awsIotMqttMode = false;
@@ -128,11 +130,13 @@ static void _onNetworkStateChangeCallback( uint32_t network,
                 credentials.pAlpnProtos = NULL;
             }
 
+            pServerInfo = ( demoConnectedNetwork == AWSIOT_NETWORK_TYPE_BLE ) ? (void*) &connectionInfo: ( void*) &serverInfo;
+
             awsIotMqttMode = ( demoConnectedNetwork != AWSIOT_NETWORK_TYPE_BLE );
 
             pDemoContext->networkConnectedCallback( awsIotMqttMode,
                                                     clientcredentialIOT_THING_NAME,
-                                                    &serverInfo,
+                                                    pServerInfo,
                                                     &credentials,
                                                     pNetworkInterface );
         }
@@ -161,10 +165,11 @@ static void _onNetworkStateChangeCallback( uint32_t network,
                 }
 
                 awsIotMqttMode = ( demoConnectedNetwork != AWSIOT_NETWORK_TYPE_BLE );
+                pServerInfo = ( demoConnectedNetwork == AWSIOT_NETWORK_TYPE_BLE ) ? (void*) &connectionInfo: ( void*) &serverInfo;
 
                 pDemoContext->networkConnectedCallback( awsIotMqttMode,
                                                         clientcredentialIOT_THING_NAME,
-                                                        &serverInfo,
+                                                        pServerInfo,
                                                         &credentials,
                                                         pNetworkInterface );
             }
@@ -293,6 +298,8 @@ void runDemoTask( void * pArgument )
     const IotNetworkInterface_t * pNetworkInterface = NULL;
     IotNetworkServerInfoAfr_t serverInfo = AWS_IOT_NETWORK_SERVER_INFO_AFR_INITIALIZER;
     IotNetworkCredentialsAfr_t credentials = AWS_IOT_NETWORK_CREDENTIALS_AFR_INITIALIZER;
+    IotNetworkBleConnectionInfo_t connectionInfo = { .service = IOT_BLE_SERVICE_MQTT };
+    void *pServerInfo = NULL;
  
     int status = EXIT_SUCCESS;
     bool awsIotMqttMode = false;
@@ -314,10 +321,12 @@ void runDemoTask( void * pArgument )
         /* Set AWS Iot Mqtt mode to false to disable keep alive for non TCP/IP networks like bluetooth */
         awsIotMqttMode = ( demoConnectedNetwork != AWSIOT_NETWORK_TYPE_BLE );
 
+         pServerInfo = ( demoConnectedNetwork == AWSIOT_NETWORK_TYPE_BLE ) ? (void*) &connectionInfo: ( void*) &serverInfo;
+
         /* Run the demo. */
         pContext->demoFunction( awsIotMqttMode,
                                 clientcredentialIOT_THING_NAME,
-                                &serverInfo,
+                                pServerInfo,
                                 &credentials,
                                 pNetworkInterface );
 

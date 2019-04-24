@@ -219,10 +219,34 @@ void _sendStatusResponse( WIFIReturnCode_t status );
 bool IotBleWifiProv_Start( void )
 {
     bool ret = false;
+    IotNetworkError_t error;
+    IotNetworkBleConnectionInfo_t info  = { .service = IOT_BLE_SERVICE_WIFI_PROVISIONING };
 
     if( wifiProvisioning.init == true )
     {
+
         wifiProvisioning.numNetworks = _getNumSavedNetworks();
+
+        if( ret == true )
+        {
+            error = IOT_NETWORK_INTERFACE_BLE->create( &info, NULL, &wifiProvisioning.pBleConnection );
+            if( error != IOT_NETWORK_SUCCESS )
+            {
+                configPRINTF(( "WiFi Provisioning service failed, error in creating connection, error = %d.\r\n", error ));
+                ret = false;
+            }
+        }
+
+        if( ret == true )
+        {
+            error = IOT_NETWORK_INTERFACE_BLE->setReceiveCallback( wifiProvisioning.pBleConnection, _requestCallback, NULL );
+            if( error != IOT_NETWORK_SUCCESS )
+            {
+                configPRINTF(( "WiFi Provisioning service failed to set connection callback, error = %d.\r\n", error ));
+                ret = false;
+            }
+        }
+        
         ret = true;
     }
 
@@ -1423,9 +1447,6 @@ static void _editNetworkTask( struct IotTaskPool * pTaskPool, struct IotTaskPool
 bool IotBleWifiProv_Init( void )
 {
     bool ret = true;
-    IotNetworkBleConnectionInfo_t info  = { .service = IOT_BLE_SERVICE_WIFI_PROVISIONING };
-    IotNetworkError_t error;
-
     if( wifiProvisioning.init == false )
     {
         wifiProvisioning.lock = xSemaphoreCreateBinary();
@@ -1448,28 +1469,9 @@ bool IotBleWifiProv_Init( void )
             }
         }
 
-        if( ret == true )
-        {
-            error = IOT_NETWORK_INTERFACE_BLE->create( &info, NULL, &wifiProvisioning.pBleConnection );
-            if( error != IOT_NETWORK_SUCCESS )
-            {
-                configPRINTF(( "WiFi Provisioning service failed, error in creating connection, error = %d.\r\n", error ));
-                ret = false;
-            }
-        }
-
-        if( ret == true )
-        {
-            error = IOT_NETWORK_INTERFACE_BLE->setReceiveCallback( wifiProvisioning.pBleConnection, _requestCallback, NULL );
-            if( error != IOT_NETWORK_SUCCESS )
-            {
-                configPRINTF(( "WiFi Provisioning service failed to set connection callback, error = %d.\r\n", error ));
-                ret = false;
-            }
-        }
-
+        wifiProvisioning.init = true;
     }
-  
+
     return ret;
 }
 
