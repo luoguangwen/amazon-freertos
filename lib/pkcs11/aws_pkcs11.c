@@ -194,7 +194,7 @@ CK_RV xInitializePkcs11Session( CK_SESSION_HANDLE * pxSession )
  *   before attempting to use the handle.
  */
 CK_RV xFindObjectWithLabelAndClass( CK_SESSION_HANDLE xSession,
-                                    const char * pcLabelName,
+                                    const uint8_t * pcLabelName,
                                     CK_OBJECT_CLASS xClass,
                                     CK_OBJECT_HANDLE_PTR pxHandle )
 {
@@ -204,7 +204,7 @@ CK_RV xFindObjectWithLabelAndClass( CK_SESSION_HANDLE xSession,
     CK_FUNCTION_LIST_PTR pxFunctionList;
     CK_ATTRIBUTE xTemplate[ 2 ] =
     {
-        { CKA_LABEL, ( char * ) pcLabelName, strlen( pcLabelName ) + 1 },
+        { CKA_LABEL, ( char * ) pcLabelName, strlen( (char *)pcLabelName ) + 1 },
         { CKA_CLASS, &xClass,                sizeof( CK_OBJECT_CLASS ) }
     };
 
